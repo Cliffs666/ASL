@@ -8,24 +8,30 @@ state("AI")
 	int missionNum : 0x17E4814, 0x4, 0x4E8;
 }
 
-init
+startup
 {
 	vars.loading = false;
 	vars.final = false;
 	vars.mission = null;
 }
 
+init
+{
+	vars.loading = false;
+	vars.final = false;
+}
+
 start
 {
 	vars.loading = false;
 	vars.final = false;
-	vars.mission = current.missionNum;
-	return current.fadeState == 2 && current.loadingIcon == 0;
+	vars.mission = null;
+	return current.fadeState == 2 && current.fadeNum > 0 || old.gameFlowState == 6 && current.gameFlowState == 4;
 }
 
 update
 {
-	if (old.levelManagerState == 5 && current.levelManagerState == 7)
+	if (old.levelManagerState == 5 && current.levelManagerState == 7 || current.gameFlowState == 6)
 	{
 		vars.loading = true;
 	}
@@ -33,7 +39,7 @@ update
 	{
 		vars.loading = false;
 	}
-	if (current.fadeState == 2 && current.missionNum == 19)
+	if (current.missionNum == 19 && current.fadeState == 2 && old.fadeNum < 0.5 && current.fadeNum > 0.5)
 	{
 		vars.final = true;
 	}
@@ -52,11 +58,12 @@ split
 	}
 	else if (vars.final == true && current.fadeState == 1 && current.gameFlowState == 4)
 	{
+		vars.final = false;
 		return true;
 	}
 }
 
 isLoading
 {
-	return vars.loading || current.gameFlowState == 6;
+	return vars.loading;
 }
